@@ -12,7 +12,7 @@ All logic is contained in the `action.yml` and `deploy.py` files. The `action.ym
 
 1. Once triggered, the python script will check if the required parameters are present.
 2. If the `CLEANUP` parameter is `True`, the deploy directory will be cleaned up, that is, **all files in the remote directory (your website) will be deleted**. It does this by retrieving the list of files in the deploy directory using the `files/readfolder` endpoint and deleting them using the `files/delete` endpoint.
-3. The script will iterate over the files in the build directory recursively and send them to the Nekoweb API using the `files/upload` endpoint. For directories, it will create the directory using the `files/create` endpoint and then upload the files inside the directory. If the deploy directory does not exist, it will be created as well.
+3. The script will iterate over the files in the build directory recursively and send them to the Nekoweb API using the `files/upload` endpoint. For directories, it will create the directory using the `files/create` endpoint and then upload the files inside the directory. If the deploy directory does not exist, it will be created as well. If a `DELAY` is set, the script will wait for the specified time before sending the next request to the API.
 
 ## Limitations
 
@@ -30,6 +30,7 @@ All logic is contained in the `action.yml` and `deploy.py` files. The `action.ym
   - `BUILD_DIR`: The directory where the build files are located. **Modify the "Prepare build" step to copy the build files to this directory.** Example: `./build`
   - `DEPLOY_DIR`: The directory where the build files will be deployed. Example: if your build files are located in `./build` and you want to deploy them to the root directory, use `/`. If you want to deploy them to a subdirectory, use the subdirectory path. Example: `/subdir`
   - `CLEANUP`: If `True`, the deploy directory will be cleaned up before deploying the build files. **⚠ Use with caution, especially on the root directory. All files in the remote directory (your website) will be deleted.** Example: `True` or `False`.
+  - `DELAY`: The delay between requests to the Nekoweb API. This is useful to avoid rate limits. Example: `0.5` (half a second). This argument is optional and defaults to `0` (no delay).
 
 ```yaml
 name: Deploy to Nekoweb
@@ -59,6 +60,7 @@ jobs:
           BUILD_DIR: './build'
           DEPLOY_DIR: '/'
           CLEANUP: 'False'
+          DELAY: '0.5'
 ```
 
 Here's a working example in a Nekoweb website repository: https://github.com/mp-pinheiro/nekoweb-api-docs/blob/main/.github/workflows/main.yml
