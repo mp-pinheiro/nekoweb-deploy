@@ -1,5 +1,5 @@
 name: Deploy to Nekoweb
-description: Build and deploy to nekoweb as a zip file via the API
+description: Deploy to Nekoweb using the Nekoweb API
 author: fairfruit
 inputs: 
   BUILD_DIR:
@@ -13,6 +13,9 @@ inputs:
   CLEANUP:
     description: Also delete remote files that don't exist locally
     default: "False"
+branding:
+  icon: upload-cloud
+  color: blue
 runs:
   using: "composite"
   steps:
@@ -21,9 +24,9 @@ runs:
       with:
         name: build
         path: ./build
-    - name: Call deploy.py https://github.com/actions/setup-python
+    - name: Cleanup and deploy
       uses: actions/setup-python@v2
       with:
         python-version: '3.x'
         run: |
-          python deploy.py ${{ secrets.NEKOWEB_API_KEY }} ${{ inputs.BUILD_DIR }} ${{ inputs.DEPLOY_DIR }} ${{ inputs.CLEANUP }}
+          python deploy.py ${{ secrets.Nekoweb_API_KEY }} ${{ inputs.BUILD_DIR }} ${{ inputs.DEPLOY_DIR }} ${{ inputs.CLEANUP }}
