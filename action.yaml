@@ -2,8 +2,11 @@ name: Deploy to Nekoweb
 description: Deploy to Nekoweb using the Nekoweb API
 author: fairfruit
 inputs: 
+  API_KEY:
+    description: Nekoweb API key
+    required: true
   BUILD_DIR:
-    description: Local build direectory to deploy
+    description: Local build directory to deploy
     required: true
     default: /build
   DEPLOY_DIR:
@@ -23,10 +26,13 @@ runs:
       uses: actions/upload-artifact@v2
       with:
         name: build
-        path: ./build
-    - name: Cleanup and deploy
-      uses: actions/setup-python@v2
+        path: ${{ inputs.BUILD_DIR }}
+
+    - name: Setup Python
+      uses: actions/setup-python@v5
       with:
         python-version: '3.x'
-        run: |
-          python deploy.py ${{ secrets.Nekoweb_API_KEY }} ${{ inputs.BUILD_DIR }} ${{ inputs.DEPLOY_DIR }} ${{ inputs.CLEANUP }}
+
+    - name: Cleanup and deploy
+      run: python deploy.py ${{ inputs.API_KEY }} ${{ inputs.BUILD_DIR }} ${{ inputs.DEPLOY_DIR }} ${{ inputs.CLEANUP }}
+      shell: bash
