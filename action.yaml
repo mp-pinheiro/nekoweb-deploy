@@ -1,0 +1,29 @@
+name: Deploy to Nekoweb
+description: Build and deploy to nekoweb as a zip file via the API
+author: fairfruit
+inputs: 
+  BUILD_DIR:
+    description: Local build direectory to deploy
+    required: true
+    default: /build
+  DEPLOY_DIR:
+    description: Remote directory to deploy to
+    required: true
+    default: /
+  CLEANUP:
+    description: Also delete remote files that don't exist locally
+    default: "False"
+runs:
+  using: "composite"
+  steps:
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: build
+        path: ./build
+    - name: Call deploy.py https://github.com/actions/setup-python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+        run: |
+          python deploy.py ${{ secrets.NEKOWEB_API_KEY }} ${{ inputs.BUILD_DIR }} ${{ inputs.DEPLOY_DIR }} ${{ inputs.CLEANUP }}
