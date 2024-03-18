@@ -5,12 +5,16 @@ import time
 import requests
 
 BASE_URL = "https://nekoweb.org/api"
-parser = argparse.ArgumentParser(description="Deploy files and directories.")
-parser.add_argument("API_KEY", type=str, help="API key for authorization")
-parser.add_argument("BUILD_DIR", type=str, help="Directory to build")
-parser.add_argument("DEPLOY_DIR", type=str, help="Directory to deploy")
+parser = argparse.ArgumentParser(description="Deploy to NekoWeb")
+parser.add_argument("API_KEY", type=str, help="Your NekoWeb API key for authentication")
 parser.add_argument(
-    "CLEANUP", type=str, choices=["true", "false"], help="Cleanup option"
+    "BUILD_DIR", type=str, help="Directory containing your website build files"
+)
+parser.add_argument("DEPLOY_DIR", type=str, help="Directory on NekoWeb to deploy to")
+parser.add_argument(
+    "CLEANUP",
+    type=str,
+    help="Whether to clean up the deploy directory (use with caution)",
 )
 parser.add_argument(
     "DELAY",
