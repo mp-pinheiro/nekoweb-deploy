@@ -30,7 +30,7 @@ All logic is contained in the `action.yml` and `deploy.py` files. The `action.ym
   - `BUILD_DIR`: The directory where the build files are located. **Modify the "Prepare build" step to copy the build files to this directory.** Example: `./build`
   - `DEPLOY_DIR`: The directory where the build files will be deployed. Example: if your build files are located in `./build` and you want to deploy them to the root directory, use `/`. If you want to deploy them to a subdirectory, use the subdirectory path. Example: `/subdir`
   - `CLEANUP`: If `True`, the deploy directory will be cleaned up before deploying the build files. **⚠ Use with caution, especially on the root directory. All files in the remote directory (your website) will be deleted.** Example: `True` or `False`.
-  - `DELAY`: The delay between requests to the Nekoweb API. This is useful to avoid rate limits. Example: `0.5` (half a second). This argument is optional and defaults to `0` (no delay).
+  - `DELAY`: The delay between requests to the Nekoweb API. This is useful to avoid rate limits. Example: `0.5` (half a second). This argument is optional and defaults to `0.5`.
 
 ```yaml
 name: Deploy to Nekoweb
