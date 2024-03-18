@@ -33,7 +33,7 @@ jobs:
           cp -r ./public/* ./build
 
       - name: Deploy to Nekoweb
-        uses: ./.github/actions/nekoweb-deploy
+        uses: mp-pinheiro/nekoweb-deploy@latest
         with:
           API_KEY: ${{ secrets.NEKOWEB_API_KEY }}
           BUILD_DIR: './build'
