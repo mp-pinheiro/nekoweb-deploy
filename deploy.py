@@ -1,12 +1,30 @@
+import argparse
 import os
-import sys
+import time
+
 import requests
 
 BASE_URL = "https://nekoweb.org/api"
-API_KEY = sys.argv[1]
-BUILD_DIR = sys.argv[2]
-DEPLOY_DIR = sys.argv[3]
-CLEANUP = sys.argv[4].lower() == "true"
+parser = argparse.ArgumentParser(description="Deploy files and directories.")
+parser.add_argument("API_KEY", type=str, help="API key for authorization")
+parser.add_argument("BUILD_DIR", type=str, help="Directory to build")
+parser.add_argument("DEPLOY_DIR", type=str, help="Directory to deploy")
+parser.add_argument(
+    "CLEANUP", type=str, choices=["true", "false"], help="Cleanup option"
+)
+parser.add_argument(
+    "DELAY",
+    type=float,
+    help="Delay in seconds between each API call (good for free users due to rate limiting)",  # noqa
+)
+
+args = parser.parse_args()
+
+API_KEY = args.API_KEY
+BUILD_DIR = args.BUILD_DIR
+DEPLOY_DIR = args.DEPLOY_DIR
+CLEANUP = args.CLEANUP.lower() == "true"
+DELAY = args.DELAY
 
 
 def delete_file_or_dir(name):
@@ -37,7 +55,6 @@ def upload_file(filepath, server_path):
         response = requests.post(
             f"{BASE_URL}/files/upload",
             headers={"Authorization": API_KEY},
-            # Remove the "Content-Type" header to let requests handle it
             data=data,
             files=files,
         )
@@ -52,6 +69,7 @@ def deploy_files_and_directories():
         if relative_path != ".":
             server_path = os.path.join(DEPLOY_DIR, relative_path.replace("\\", "/"))
             create_directory(server_path)
+            time.sleep(DELAY)
         else:
             server_path = DEPLOY_DIR
 
@@ -59,6 +77,7 @@ def deploy_files_and_directories():
             file_path = os.path.join(root, file)
             server_file_path = os.path.join(server_path, file).replace("\\", "/")
             upload_file(file_path, server_file_path)
+            time.sleep(DELAY)
 
 
 if CLEANUP:
@@ -71,6 +90,7 @@ if CLEANUP:
         files_and_dirs = [item["name"] for item in read_folder_response.json()]
         for file_or_dir in files_and_dirs:
             delete_file_or_dir(os.path.join(DEPLOY_DIR, file_or_dir))
+            time.sleep(DELAY)
     else:
         print(f"Error reading folder: {read_folder_response.text}")
 

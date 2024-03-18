@@ -13,6 +13,9 @@ inputs:
     description: Remote directory to deploy to
     required: true
     default: /
+  DELAY:
+    description: Delay between Nekoweb API requests (in seconds)
+    default: "0.5"
   CLEANUP:
     description: Also delete remote files that don't exist locally
     default: "False"
