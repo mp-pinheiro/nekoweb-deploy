@@ -35,5 +35,5 @@ runs:
       shell: bash
 
     - name: Cleanup and deploy
-      run: python ${{ github.action_path }}/deploy.py ${{ inputs.API_KEY }} ${{ inputs.BUILD_DIR }} ${{ inputs.DEPLOY_DIR }} ${{ inputs.CLEANUP }}
+      run: python ${{ github.action_path }}/deploy.py ${{ inputs.API_KEY }} ${{ inputs.BUILD_DIR }} ${{ inputs.DEPLOY_DIR }} ${{ inputs.CLEANUP }} ${{ inputs.DELAY }}
       shell: bash
