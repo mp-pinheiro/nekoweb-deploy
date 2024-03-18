@@ -34,5 +34,5 @@ runs:
         python-version: '3.x'
 
     - name: Cleanup and deploy
-      run: python ${{ github.action_path }}/deploy.py ${{ secrets.Nekoweb_API_KEY }} ${{ inputs.BUILD_DIR }} ${{ inputs.DEPLOY_DIR }} ${{ inputs.CLEANUP }}
+      run: python ${{ github.action_path }}/deploy.py ${{ secrets.API_KEY }} ${{ inputs.BUILD_DIR }} ${{ inputs.DEPLOY_DIR }} ${{ inputs.CLEANUP }}
       shell: bash
