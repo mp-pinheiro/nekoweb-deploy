@@ -68,7 +68,7 @@ runs:
           CMD="$CMD --retry-delay ${{ inputs.RETRY_DELAY }}"
         fi
         if [[ -n "${{ inputs.RETRY_EXP_BACKOFF }}" =~ ^(true|True|TRUE)$ ]]; then
-          CMD="$CMD --retry-exp-backoff
+          CMD="$CMD --retry-exp-backoff"
         fi
         if [[ "${{ inputs.DEBUG }}" =~ ^(true|True|TRUE)$ ]]; then
           CMD="$CMD --debug"
