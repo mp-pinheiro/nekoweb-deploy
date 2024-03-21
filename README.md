@@ -16,7 +16,6 @@ All logic is contained in the `action.yml` and `deploy.py` files. The `action.ym
     1. For directories, it will create the directory using the `files/create` endpoint.
     1. For files, it will check for a `file_states` file in the deploy directory and compare the file's hash with the hash in the `file_states` file. If the hashes are the same, the file will not be uploaded. If the hashes are different, the file will be uploaded. If the `file_states` file does not exist, the file will be uploaded. The `NEKOWEB_PAGENAME` parameter is used to fetch the `file_states` file from the deploy directory. 
     1. The `file_states` file can be encrypted by passing an `ENCRYPTION_KEY` parameter. If the `ENCRYPTION_KEY` parameter is set, the `file_states` file will be encrypted using the `cryptography` library. The `file_states` file is used to avoid uploading files that have not changed, which can save time and API requests. 
-    1. If a `DELAY` is set, the script will wait for the specified time before sending the next request to the API.
 
 ## Limitations
 
@@ -36,6 +35,9 @@ All logic is contained in the `action.yml` and `deploy.py` files. The `action.ym
   - `NEKOWEB_PAGENAME`: Your NekoWeb page name (your username unless you use a custom domain). Example: `fairfruit`
   - `CLEANUP`: If `True`, the deploy directory will be cleaned up before deploying the build files. **⚠ Use with caution, especially on the root directory. All files in the remote directory (your website) will be deleted.** This argument is optional and defaults to `False`.
   - `DELAY`: The delay between requests to the Nekoweb API. This is useful to avoid rate limits. Example: `0.5` (half a second). This argument is optional and defaults to `0.5`.
+  - `RETRY_ATTEMPTS`: The number of retry attempts for API calls. If the API returns a 429 status code, the action will wait for the delay and retry the request. It'll retry the request this number of times before failing. This argument is optional and defaults to `5`.
+  - `RETRY_DELAY`: The delay between retry attempts. This argument is optional and defaults to `1`.
+  - `RETRY_EXP_BACKOFF`: If `True`, the delay between retry attempts will be exponential backoff. This argument is optional and defaults to `False`.
   - `ENCRYPTION_KEY`: A secret key used to encrypt the file states. Must be a 32-byte URL-safe base64-encoded string. You should also store this key in the [Github repository secrets](https://docs.github.com/en/actions/security-guides/using-secrets-in-github-actions). Example: `${{ secrets.ENCRYPTION_KEY }}`. This argument is optional and no encryption will be used. **That means the file states will be stored in plain text in the deploy directory containing a list of all files and their hashes from your build directory. Use with caution.**
 
 ```yaml
@@ -60,7 +62,7 @@ jobs:
           cp -r ./public/* ./build
 
       - name: Deploy to Nekoweb
-        uses: mp-pinheiro/nekoweb-deploy@0.2.2
+        uses: mp-pinheiro/nekoweb-deploy@main
         with:
           API_KEY: ${{ secrets.NEKOWEB_API_KEY }}
           BUILD_DIR: './build'
@@ -78,9 +80,13 @@ Here's a working example in a Nekoweb website repository: https://github.com/mp-
 You can use the action locally using the `deploy.py` script. You will need to install the dependencies using `pip install -r requirements.txt`. Then you can run the script using the following command:
 
 ```bash
-python deploy.py [--debug] \
-  [--delay <DELAY>]
+python deploy.py \
+  [--delay <DELAY>] \
+  [--retry-attempts <RETRY_ATTEMPTS>] \
+  [--retry-delay <RETRY_DELAY>] \
+  [--retry-exp-backoff] \
   [--encryption-key <ENCRYPTION_KEY>] \
+  [--debug] \
   <API_KEY> \
   <BUILD_DIR> \
   <DEPLOY_DIR> \
