@@ -60,7 +60,7 @@ class NekoWebAPI:
             "GET",
             file_states_url,
             headers={"Authorization": self.api_key},
-            ignored_errors={404: {"partial_message": "Page was not found."}},
+            ignored_errors={404: {"ignore_all": True}},
         )
 
         if response.ok:
