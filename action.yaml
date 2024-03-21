@@ -13,12 +13,18 @@ inputs:
     description: Remote directory to deploy to
     required: true
     default: /
-  DELAY:
-    description: Delay between Nekoweb API requests (in seconds)
-    default: "0.5"
+  NEKOWEB_PAGENAME:
+    description: Your NekoWeb page name (your username unless you use a custom domain).
+    required: true
   CLEANUP:
     description: Also delete remote files that don't exist locally
     default: "False"
+  DELAY:
+    description: Delay between Nekoweb API requests (in seconds)
+    required: false
+  ENCRYPTION_KEY:
+      description: A secret key used to encrypt the file states. Must be a 32-byte URL-safe base64-encoded string
+      required: false
 branding:
   icon: upload-cloud
   color: blue
@@ -35,5 +41,5 @@ runs:
       shell: bash
 
     - name: Cleanup and deploy
-      run: python ${{ github.action_path }}/deploy.py ${{ inputs.API_KEY }} ${{ inputs.BUILD_DIR }} ${{ inputs.DEPLOY_DIR }} ${{ inputs.CLEANUP }} ${{ inputs.DELAY }}
+      run: python ${{ github.action_path }}/deploy.py ${{ inputs.API_KEY }} ${{ inputs.BUILD_DIR }} ${{ inputs.DEPLOY_DIR }} ${{ inputs.CLEANUP }} ${{ inputs.NEKOWEB_PAGENAME }} --DELAY ${{ inputs.DELAY }} --ENCRYPTION_KEY ${{ inputs.ENCRYPTION_KEY }}
       shell: bash
