@@ -67,12 +67,16 @@ runs:
         if [[ -n "${{ inputs.RETRY_DELAY }}" ]]; then
           CMD="$CMD --retry-delay ${{ inputs.RETRY_DELAY }}"
         fi
-        if [[ -n "${{ inputs.RETRY_EXP_BACKOFF }}" =~ ^(true|True|TRUE)$ ]]; then
+        
+        shopt -s nocasematch
+        if [[ "${{ inputs.RETRY_EXP_BACKOFF }}" == "true" ]]; then
           CMD="$CMD --retry-exp-backoff"
         fi
-        if [[ "${{ inputs.DEBUG }}" =~ ^(true|True|TRUE)$ ]]; then
+        shopt -u nocasematch
+        
+        if [[ "${{ inputs.DEBUG }}" == "true" ]]; then
           CMD="$CMD --debug"
         fi
         echo "Running command: $CMD"
-        $CMD
+        eval $CMD
       shell: bash
