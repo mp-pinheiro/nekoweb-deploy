@@ -44,10 +44,10 @@ runs:
       run: |
         CMD="python ${{ github.action_path }}/deploy.py ${{ inputs.API_KEY }} ${{ inputs.BUILD_DIR }} ${{ inputs.DEPLOY_DIR }} ${{ inputs.CLEANUP }} ${{ inputs.NEKOWEB_PAGENAME }}"
         if [[ -n "${{ inputs.DELAY }}" ]]; then
-          CMD="$CMD --DELAY ${{ inputs.DELAY }}"
+          CMD="$CMD --delay ${{ inputs.DELAY }}"
         fi
         if [[ -n "${{ inputs.ENCRYPTION_KEY }}" ]]; then
-          CMD="$CMD --ENCRYPTION_KEY ${{ inputs.ENCRYPTION_KEY }}"
+          CMD="$CMD --encryption-key ${{ inputs.ENCRYPTION_KEY }}"
         fi
         $CMD
       shell: bash
