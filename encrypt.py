@@ -1,7 +1,7 @@
 import base64
 import hashlib
 
-from cryptography.fernet import Fernet
+from cryptography.fernet import Fernet, InvalidToken
 
 
 def compute_md5(file_path):
@@ -25,4 +25,7 @@ def encrypt_data(data, key):
 def decrypt_data(encrypted_data, key):
     encodded_key = encode_key(key)
     f = Fernet(encodded_key)
-    return f.decrypt(encrypted_data).decode()
+    try:
+        return f.decrypt(encrypted_data).decode()
+    except InvalidToken:
+        raise ValueError("Invalid encryption key. Please provide the correct key or do a fresh deployment.")
