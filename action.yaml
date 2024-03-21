@@ -53,7 +53,7 @@ runs:
           CMD="$CMD --encryption-key ${{ inputs.ENCRYPTION_KEY }}"
         fi
         if [[ "${{ inputs.DEBUG }}" == "True" ]]; then
-          CMD="$CMD --debug
+          CMD="$CMD --debug"
         fi
         $CMD
       shell: bash
