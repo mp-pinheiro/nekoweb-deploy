@@ -73,12 +73,29 @@ jobs:
 
 Here's a working example in a Nekoweb website repository: https://github.com/mp-pinheiro/nekoweb-api-docs/blob/main/.github/workflows/main.yml
 
+# Using it locally
+
+You can use the action locally using the `deploy.py` script. You will need to install the dependencies using `pip install -r requirements.txt`. Then you can run the script using the following command:
+
+```bash
+python deploy.py [--debug] \
+  [--delay <DELAY>]
+  [--encryption-key <ENCRYPTION_KEY>] \
+  <API_KEY> \
+  <BUILD_DIR> \
+  <DEPLOY_DIR> \
+  <CLEANUP> \
+  <NEKOWEB_PAGENAME>
+```
+
 # Contributing
 
 This action is in a very early stage and may not work as expected. If you find any issues, please open an issue or a pull request. All contributions are welcome. 
 
 Here are some ideas for contributions:
 
-- Add error handling and disaster recovery mechanisms such as retrying failed requests
+- There's still room for improvements in the code. The code is not very clean and could be better organized.
+- Add a more robust and configurable retry mechanism for API calls.
+- Add support for deleting/renaming/moving files (besides the `CLEANUP` parameter)
 - Add support for files larger than 100MB using the `bigfiles` endpoints
-- Improve logging and error messages
+- Using `typer` for the CLI might conflict with the `handle_errors` decorator.

@@ -41,5 +41,13 @@ runs:
       shell: bash
 
     - name: Cleanup and deploy
-      run: python ${{ github.action_path }}/deploy.py ${{ inputs.API_KEY }} ${{ inputs.BUILD_DIR }} ${{ inputs.DEPLOY_DIR }} ${{ inputs.CLEANUP }} ${{ inputs.NEKOWEB_PAGENAME }} --DELAY ${{ inputs.DELAY }} --ENCRYPTION_KEY ${{ inputs.ENCRYPTION_KEY }}
+      run: |
+        CMD="python ${{ github.action_path }}/deploy.py ${{ inputs.API_KEY }} ${{ inputs.BUILD_DIR }} ${{ inputs.DEPLOY_DIR }} ${{ inputs.CLEANUP }} ${{ inputs.NEKOWEB_PAGENAME }}"
+        if [[ -n "${{ inputs.DELAY }}" ]]; then
+          CMD="$CMD --DELAY ${{ inputs.DELAY }}"
+        fi
+        if [[ -n "${{ inputs.ENCRYPTION_KEY }}" ]]; then
+          CMD="$CMD --ENCRYPTION_KEY ${{ inputs.ENCRYPTION_KEY }}"
+        fi
+        $CMD
       shell: bash

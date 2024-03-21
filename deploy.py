@@ -1,13 +1,13 @@
-import argparse
 import functools
 import logging
 import os
 import time
 
-from encrypt import compute_md5
+import typer
 
 from api import NekoWebAPI
 from custom_logger import StructuredLogger
+from encrypt import compute_md5
 
 logging.setLoggerClass(StructuredLogger)
 
@@ -45,31 +45,7 @@ def handle_errors(func):
     return wrapper
 
 
-def parse_args():
-    parser = argparse.ArgumentParser(description="Deploy to NekoWeb")
-    parser.add_argument("API_KEY", type=str, help="Your NekoWeb API key for authentication")
-    parser.add_argument("BUILD_DIR", type=str, help="Directory containing your website build files")
-    parser.add_argument("DEPLOY_DIR", type=str, help="Directory on NekoWeb to deploy to")
-    parser.add_argument("CLEANUP", type=str, help="Whether to clean up the deploy directory before deployment")
-    parser.add_argument(
-        "NEKOWEB_PAGENAME", type=str, help="Your NekoWeb page name (your username unless you use a custom domain)"
-    )
-    parser.add_argument(
-        "--DELAY", type=float, default=0.0, help="Delay in seconds between each API call (default is 0.0)"
-    )
-    parser.add_argument(
-        "--ENCRYPTION_KEY",
-        type=str,
-        default=None,
-        help="A secret key used to encrypt the file states. Must be a 32-byte URL-safe base64-encoded string",
-    )
-    parser.add_argument(
-        "--DEBUG",
-        type=bool,
-        default=False,
-        help="Whether to enable debug mode and print tracebacks to the console",
-    )
-    return parser.parse_args()
+app = typer.Typer()
 
 
 def cleanup_remote_directory(api, deploy_dir):
@@ -154,17 +130,29 @@ def deploy(api, build_dir, deploy_dir, delay, encryption_key):
     logger.info(stats)
 
 
+@app.command()
 @handle_errors
-def main():
-    args = parse_args()
+def main(
+    api_key: str = typer.Argument(..., help="Your NekoWeb API key for authentication"),
+    build_dir: str = typer.Argument(..., help="Directory containing your website build files"),
+    deploy_dir: str = typer.Argument(..., help="Directory on NekoWeb to deploy to"),
+    cleanup: str = typer.Argument(..., help="Whether to clean up the deploy directory before deployment"),
+    nekoweb_pagename: str = typer.Argument(
+        ..., help="Your NekoWeb page name (your username unless you use a custom domain)"
+    ),
+    delay: float = typer.Option(0.0, help="Delay in seconds between each API call (default is 0.0)"),
+    encryption_key: str = typer.Option(
+        None, help="A secret key used to encrypt the file states. Must be a 32-byte URL-safe base64-encoded string"
+    ),
+    debug: bool = typer.Option(False, help="Whether to enable debug mode and print tracebacks to the console"),
+):
     global DEBUG
-    DEBUG = args.DEBUG
-
-    api = NekoWebAPI(args.API_KEY, "nekoweb.org", args.NEKOWEB_PAGENAME)
-    if args.CLEANUP.lower() == "true":
-        cleanup_remote_directory(api, args.DEPLOY_DIR)
-    deploy(api, args.BUILD_DIR, args.DEPLOY_DIR, args.DELAY, args.ENCRYPTION_KEY)
+    DEBUG = debug
+    api = NekoWebAPI(api_key, "nekoweb.org", nekoweb_pagename)
+    if cleanup.lower() == "true":
+        cleanup_remote_directory(api, deploy_dir)
+    deploy(api, build_dir, deploy_dir, delay, encryption_key)
 
 
 if __name__ == "__main__":
-    main()
+    app()
