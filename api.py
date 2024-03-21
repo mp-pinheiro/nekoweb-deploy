@@ -64,9 +64,15 @@ class NekoWebAPI:
         )
 
         if response.ok:
+            # decrypt the data if an encryption key is provided
             if encryption_key:
                 return json.loads(decrypt_data(response.content, encryption_key))
-            return response.json()
+
+            # return the data as is if no encryption key is provided
+            try:
+                return response.json()
+            except json.JSONDecodeError:
+                raise ValueError("No encryption key provided. Please provide the correct key or do a fresh deployment.")
         else:
             return {}
 
