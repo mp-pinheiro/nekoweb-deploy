@@ -52,7 +52,7 @@ runs:
         if [[ -n "${{ inputs.ENCRYPTION_KEY }}" ]]; then
           CMD="$CMD --encryption-key ${{ inputs.ENCRYPTION_KEY }}"
         fi
-        if [[ "${{ inputs.DEBUG }}" == "True" ]]; then
+        if [[ "${{ inputs.DEBUG }}" =~ ^(true|True|TRUE)$ ]]; then
           CMD="$CMD --debug"
         fi
         $CMD
