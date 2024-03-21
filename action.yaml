@@ -22,6 +22,15 @@ inputs:
   DELAY:
     description: Delay between Nekoweb API requests (in seconds)
     required: false
+  RETRY_ATTEMTPS:
+    description: Number of times to retry the Nekoweb API request
+    required: false
+  RETRY_DELAY:
+    description: Delay between Nekoweb API request retries (in seconds) when rate limited
+    required: false
+  RETRY_EXP_BACKOFF:
+    description: Exponential backoff for Nekoweb API request retries
+    required: false
   ENCRYPTION_KEY:
       description: A secret key used to encrypt the file states. Must be a 32-byte URL-safe base64-encoded string
       required: false
@@ -51,6 +60,15 @@ runs:
         fi
         if [[ -n "${{ inputs.ENCRYPTION_KEY }}" ]]; then
           CMD="$CMD --encryption-key ${{ inputs.ENCRYPTION_KEY }}"
+        fi
+        if [[ -n "${{ inputs.RETRY_ATTEMPTS }}" ]]; then
+          CMD="$CMD --retry-attempts ${{ inputs.RETRY_ATTEMPTS }}"
+        fi
+        if [[ -n "${{ inputs.RETRY_DELAY }}" ]]; then
+          CMD="$CMD --retry-delay ${{ inputs.RETRY_DELAY }}"
+        fi
+        if [[ -n "${{ inputs.RETRY_EXP_BACKOFF }}" =~ ^(true|True|TRUE)$ ]]; then
+          CMD="$CMD --retry-exp-backoff
         fi
         if [[ "${{ inputs.DEBUG }}" =~ ^(true|True|TRUE)$ ]]; then
           CMD="$CMD --debug"

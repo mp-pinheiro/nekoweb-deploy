@@ -8,6 +8,7 @@ import typer
 from api import NekoWebAPI
 from custom_logger import StructuredLogger
 from encrypt import compute_md5
+from requester import Requester
 
 logging.setLoggerClass(StructuredLogger)
 
@@ -156,17 +157,26 @@ def main(
         ..., help="Your NekoWeb page name (your username unless you use a custom domain)"
     ),
     delay: float = typer.Option(0.0, help="Delay in seconds between each API call (default is 0.0)"),
+    retry_attempts: int = typer.Option(5, help="Number of times to retry a failed API call (default is 3)"),
+    retry_delay: float = typer.Option(1.0, help="Delay in seconds between each retry attempt (default is 1.0)"),
+    retry_exp_backoff: bool = typer.Option(
+        False, help="Whether to use exponential backoff for retry attempts (default is False)"
+    ),
     encryption_key: str = typer.Option(
         None, help="A secret key used to encrypt the file states. Must be a 32-byte URL-safe base64-encoded string"
     ),
     debug: bool = typer.Option(False, help="Whether to enable debug mode and print tracebacks to the console"),
 ):
+    # setup Requester singleton
+    Requester(max_retries=retry_attempts, backoff_factor=retry_delay, exponential_backoff=retry_exp_backoff)
+
+    # setup logger and debug
     global DEBUG
     DEBUG = debug
-
     if DEBUG:
         logger.setLevel(logging.DEBUG)
 
+    # initialize
     api = NekoWebAPI(api_key, "nekoweb.org", nekoweb_pagename)
     if cleanup.lower() == "true":
         cleanup_remote_directory(api, deploy_dir)
