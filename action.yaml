@@ -45,24 +45,16 @@ runs:
 
     - name: Cleanup and deploy
       run: |
-        echo "Build Directory: ${{ inputs.BUILD_DIR }}"
-        echo "Deploy Directory: ${{ inputs.DEPLOY_DIR }}"
-        echo "Cleanup: ${{ inputs.CLEANUP }}"
-        echo "Nekoweb Page Name: ${{ inputs.NEKOWEB_PAGENAME }}"
-        echo "Delay: ${{ inputs.DELAY }}"
-        echo "Debug: ${{ inputs.DEBUG }}"
         CMD="python ${{ github.action_path }}/deploy.py ${{ inputs.API_KEY }} ${{ inputs.BUILD_DIR }} ${{ inputs.DEPLOY_DIR }} ${{ inputs.CLEANUP }} ${{ inputs.NEKOWEB_PAGENAME }}"
         if [[ -n "${{ inputs.DELAY }}" ]]; then
           CMD="$CMD --delay ${{ inputs.DELAY }}"
-          echo "Delay is set."
         fi
         if [[ -n "${{ inputs.ENCRYPTION_KEY }}" ]]; then
           CMD="$CMD --encryption-key ${{ inputs.ENCRYPTION_KEY }}"
-          echo "Encryption Key is set."
         fi
         if [[ "${{ inputs.DEBUG }}" =~ ^(true|True|TRUE)$ ]]; then
           CMD="$CMD --debug"
-          echo "Debug mode is enabled."
         fi
+        echo "Running command: $CMD"
         $CMD
       shell: bash
