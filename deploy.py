@@ -58,7 +58,7 @@ def cleanup_remote_directory(api, deploy_dir):
             logger.error({"message": "Failed to delete file", "file": full_path})
 
 
-def deploy(api, build_dir, deploy_dir, delay, encryption_key):
+def deploy(api, build_dir, deploy_dir, delay, encryption_key, debug):
     stats = {
         "message": "Deployed build to NekoWeb",
         "build_dir": build_dir,
@@ -69,6 +69,7 @@ def deploy(api, build_dir, deploy_dir, delay, encryption_key):
         "files_skipped": 0,
         "directories_created": 0,
         "directories_skipped": 0,
+        "debug": debug,
     }
 
     file_states = api.fetch_file_states(deploy_dir, encryption_key)
@@ -151,7 +152,7 @@ def main(
     api = NekoWebAPI(api_key, "nekoweb.org", nekoweb_pagename)
     if cleanup.lower() == "true":
         cleanup_remote_directory(api, deploy_dir)
-    deploy(api, build_dir, deploy_dir, delay, encryption_key)
+    deploy(api, build_dir, deploy_dir, delay, encryption_key, debug)
 
 
 if __name__ == "__main__":
