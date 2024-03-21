@@ -36,7 +36,11 @@ def handle_errors(func):
                     ),
                 }
             )
-            raise e
+
+            if DEBUG:
+                raise e
+            else:
+                exit(1)
 
     return wrapper
 
@@ -58,6 +62,12 @@ def parse_args():
         type=str,
         default=None,
         help="A secret key used to encrypt the file states. Must be a 32-byte URL-safe base64-encoded string",
+    )
+    parser.add_argument(
+        "--DEBUG",
+        type=bool,
+        default=False,
+        help="Whether to enable debug mode and print tracebacks to the console",
     )
     return parser.parse_args()
 
@@ -147,6 +157,9 @@ def deploy(api, build_dir, deploy_dir, delay, encryption_key):
 @handle_errors
 def main():
     args = parse_args()
+    global DEBUG
+    DEBUG = args.DEBUG
+
     api = NekoWebAPI(args.API_KEY, "nekoweb.org", args.NEKOWEB_PAGENAME)
     if args.CLEANUP.lower() == "true":
         cleanup_remote_directory(api, args.DEPLOY_DIR)
