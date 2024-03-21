@@ -1,6 +1,10 @@
+import logging
 import time
+
 import requests
 from requests.exceptions import HTTPError
+
+logger = logging.getLogger("neko-deploy")
 
 
 class Requester:
@@ -30,6 +34,7 @@ class Requester:
         ignored_errors = kwargs.pop("ignored_errors", {})
 
         while retries > 0:
+            logger.debug({"message": "Making request", "method": method, "url": url, "retries": retries, **kwargs})
             response = requests.request(method, url, **kwargs)
 
             if response.status_code == 200:
@@ -50,7 +55,6 @@ class Requester:
                         return response
 
                 # raise an exception if the error is not in the ignored_errors dictionary
-                print(response.text)
                 response.raise_for_status()
 
         raise HTTPError(f"Max retries exceeded for URL: {url} ({retries} retries)")

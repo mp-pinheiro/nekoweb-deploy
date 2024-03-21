@@ -18,12 +18,15 @@ inputs:
     required: true
   CLEANUP:
     description: Also delete remote files that don't exist locally
-    default: "False"
+    default: false
   DELAY:
     description: Delay between Nekoweb API requests (in seconds)
     required: false
   ENCRYPTION_KEY:
       description: A secret key used to encrypt the file states. Must be a 32-byte URL-safe base64-encoded string
+      required: false
+  DEBUG:
+      description: Enable debug mode
       required: false
 branding:
   icon: upload-cloud
@@ -49,8 +52,9 @@ runs:
         if [[ -n "${{ inputs.ENCRYPTION_KEY }}" ]]; then
           CMD="$CMD --encryption-key ${{ inputs.ENCRYPTION_KEY }}"
         fi
-        if [[ -n "${{ inputs.DEBUG }}" ]]; then
-          CMD="$CMD --debug ${{ inputs.DEBUG }}"
+        if [[ "${{ inputs.DEBUG }}" =~ ^(true|True|TRUE)$ ]]; then
+          CMD="$CMD --debug"
         fi
+        echo "Running command: $CMD"
         $CMD
       shell: bash

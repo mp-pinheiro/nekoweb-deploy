@@ -16,7 +16,7 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(message)s",
     datefmt="%Y-%m-%dT%H:%M:%S",
 )
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("neko-deploy")
 
 
 def handle_errors(func):
@@ -25,10 +25,15 @@ def handle_errors(func):
         try:
             return func(*args, **kwargs)
         except Exception as e:
+            details = None
+            if type(e).__name__ == "HTTPError":
+                details = e.response.text
+
             logger.error(
                 {
                     "message": "One or more errors occurred during deployment",
                     "error": str(e),
+                    "details": details,
                     "advice": (
                         "Please check NekoWeb as the state of the website might be corrupted. "
                         "Consider downloading the build artifact and manually uploading the zip file as a workaround. "
@@ -58,7 +63,7 @@ def cleanup_remote_directory(api, deploy_dir):
             logger.error({"message": "Failed to delete file", "file": full_path})
 
 
-def deploy(api, build_dir, deploy_dir, delay, encryption_key):
+def deploy(api, build_dir, deploy_dir, delay, encryption_key, debug):
     stats = {
         "message": "Deployed build to NekoWeb",
         "build_dir": build_dir,
@@ -69,6 +74,7 @@ def deploy(api, build_dir, deploy_dir, delay, encryption_key):
         "files_skipped": 0,
         "directories_created": 0,
         "directories_skipped": 0,
+        "debug": debug,
     }
 
     file_states = api.fetch_file_states(deploy_dir, encryption_key)
@@ -92,12 +98,19 @@ def deploy(api, build_dir, deploy_dir, delay, encryption_key):
         for file in files:
             if file == "_file_states":
                 continue
+
             local_path = os.path.join(root, file)
             server_file_path = os.path.join(server_path, file)
             local_md5 = compute_md5(local_path)
 
             if server_file_path not in file_states or local_md5 != file_states.get(server_file_path):
-                if api.upload_file(local_path, server_file_path):
+                # defines the update method: `upload_file` or `edit_file`
+                api_method = api.upload_file
+                if server_file_path == "/elements.css":
+                    # `/elements.css` is a special file that cannot be uploaded using the `upload_file` method
+                    api_method = api.edit_file
+
+                if api_method(local_path, server_file_path):
                     action = "File uploaded" if server_file_path not in file_states else "File updated"
                     logger.info(
                         {
@@ -148,10 +161,14 @@ def main(
 ):
     global DEBUG
     DEBUG = debug
+
+    if DEBUG:
+        logger.setLevel(logging.DEBUG)
+
     api = NekoWebAPI(api_key, "nekoweb.org", nekoweb_pagename)
     if cleanup.lower() == "true":
         cleanup_remote_directory(api, deploy_dir)
-    deploy(api, build_dir, deploy_dir, delay, encryption_key)
+    deploy(api, build_dir, deploy_dir, delay, encryption_key, debug)
 
 
 if __name__ == "__main__":

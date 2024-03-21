@@ -1,7 +1,9 @@
-import os
 import json
+import os
 
-from encrypt import encrypt_data, decrypt_data
+from requests.exceptions import HTTPError
+
+from encrypt import decrypt_data, encrypt_data
 from requester import Requester
 
 
@@ -36,6 +38,14 @@ class NekoWebAPI:
             )
             return response.ok
 
+    def edit_file(self, filepath, server_path):
+        with open(filepath, "r") as f:
+            files = {"pathname": (None, "/elements.css"), "content": (None, f.read())}
+            response = self.requester.request(
+                "POST", f"{self.base_url}/files/edit", headers={"Authorization": self.api_key}, files=files
+            )
+            return response.ok
+
     def list_files(self, pathname):
         response = self.requester.request(
             "GET",
@@ -55,6 +65,17 @@ class NekoWebAPI:
         return response.ok
 
     def fetch_file_states(self, deploy_dir, encryption_key=None):
+        # validate page url
+        try:
+            response = self.requester.request(
+                "GET",
+                self.page_url,
+                headers={"Authorization": self.api_key},
+            )
+        except HTTPError:
+            raise ValueError(f"Invalid page URL: `{self.page_url}`. Check your `NEKOWEB_PAGENAME` parameter.")
+
+        # fetch the file states
         file_states_url = f"{self.page_url}/{deploy_dir}/_file_states"
         response = self.requester.request(
             "GET",
