@@ -18,7 +18,7 @@ inputs:
     required: true
   CLEANUP:
     description: Also delete remote files that don't exist locally
-    default: false
+    default: 'False'
   DELAY:
     description: Delay between Nekoweb API requests (in seconds)
     required: false
