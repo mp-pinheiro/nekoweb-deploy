@@ -98,12 +98,19 @@ def deploy(api, build_dir, deploy_dir, delay, encryption_key, debug):
         for file in files:
             if file == "_file_states":
                 continue
+
             local_path = os.path.join(root, file)
             server_file_path = os.path.join(server_path, file)
             local_md5 = compute_md5(local_path)
 
             if server_file_path not in file_states or local_md5 != file_states.get(server_file_path):
-                if api.upload_file(local_path, server_file_path):
+                # defines the update method: `upload_file` or `edit_file`
+                api_method = api.upload_file
+                if server_file_path == "/elements.css":
+                    # `/elements.css` is a special file that cannot be uploaded using the `upload_file` method
+                    api_method = api.edit_file
+
+                if api_method(local_path, server_file_path):
                     action = "File uploaded" if server_file_path not in file_states else "File updated"
                     logger.info(
                         {
