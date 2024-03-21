@@ -1,6 +1,10 @@
+import logging
 import time
+
 import requests
 from requests.exceptions import HTTPError
+
+logger = logging.getLogger("neko-deploy")
 
 
 class Requester:
@@ -30,6 +34,7 @@ class Requester:
         ignored_errors = kwargs.pop("ignored_errors", {})
 
         while retries > 0:
+            logger.debug({"message": "Making request", "method": method, "url": url, "retries": retries, **kwargs})
             response = requests.request(method, url, **kwargs)
 
             if response.status_code == 200:

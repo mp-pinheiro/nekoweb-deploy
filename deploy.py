@@ -16,7 +16,7 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(message)s",
     datefmt="%Y-%m-%dT%H:%M:%S",
 )
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("neko-deploy")
 
 
 def handle_errors(func):
@@ -25,10 +25,15 @@ def handle_errors(func):
         try:
             return func(*args, **kwargs)
         except Exception as e:
+            details = None
+            if type(e).__name__ == "HTTPError":
+                details = e.response.text
+
             logger.error(
                 {
                     "message": "One or more errors occurred during deployment",
                     "error": str(e),
+                    "details": details,
                     "advice": (
                         "Please check NekoWeb as the state of the website might be corrupted. "
                         "Consider downloading the build artifact and manually uploading the zip file as a workaround. "
@@ -149,6 +154,10 @@ def main(
 ):
     global DEBUG
     DEBUG = debug
+
+    if DEBUG:
+        logger.setLevel(logging.DEBUG)
+
     api = NekoWebAPI(api_key, "nekoweb.org", nekoweb_pagename)
     if cleanup.lower() == "true":
         cleanup_remote_directory(api, deploy_dir)
