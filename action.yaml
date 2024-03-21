@@ -49,5 +49,8 @@ runs:
         if [[ -n "${{ inputs.ENCRYPTION_KEY }}" ]]; then
           CMD="$CMD --encryption-key ${{ inputs.ENCRYPTION_KEY }}"
         fi
+        if [[ -n "${{ inputs.DEBUG }}" ]]; then
+          CMD="$CMD --debug ${{ inputs.DEBUG }}"
+        fi
         $CMD
       shell: bash
