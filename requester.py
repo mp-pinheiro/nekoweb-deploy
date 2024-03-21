@@ -50,7 +50,6 @@ class Requester:
                         return response
 
                 # raise an exception if the error is not in the ignored_errors dictionary
-                print(response.text)
                 response.raise_for_status()
 
         raise HTTPError(f"Max retries exceeded for URL: {url} ({retries} retries)")
