@@ -8,9 +8,16 @@ logger = logging.getLogger("neko-deploy")
 
 
 class Requester:
-    def __init__(self, max_retries=5, backoff_factor=0.3):
-        self.max_retries = max_retries
-        self.backoff_factor = backoff_factor
+    _shared_state = {}
+
+    def __init__(self, max_retries=5, backoff_factor=1, exponential_backoff=False):
+        self.__dict__ = self._shared_state
+        if not hasattr(self, "max_retries"):
+            self.max_retries = max_retries
+        if not hasattr(self, "backoff_factor"):
+            self.backoff_factor = backoff_factor
+        if not hasattr(self, "exponential_backoff"):
+            self.exponential_backoff = exponential_backoff
 
     def request(self, method, url, **kwargs):
         """Make a request to the given URL with the given method and keyword arguments.
@@ -32,6 +39,7 @@ class Requester:
         """
         retries = self.max_retries
         ignored_errors = kwargs.pop("ignored_errors", {})
+        retry_time = self.backoff_factor
 
         while retries > 0:
             logger.debug({"message": "Making request", "method": method, "url": url, "retries": retries, **kwargs})
@@ -42,6 +50,8 @@ class Requester:
             elif response.status_code == 429:
                 time.sleep(self.backoff_factor)
                 retries -= 1
+                if self.exponential_backoff:
+                    retry_time *= 2
             else:
                 # check if the error is in the ignored_errors dictionary
                 if response.status_code in ignored_errors:
