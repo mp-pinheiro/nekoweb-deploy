@@ -27,7 +27,8 @@ def handle_errors(func):
         except Exception as e:
             details = None
             if type(e).__name__ == "HTTPError":
-                details = e.response.text
+                if e.response:
+                    details = e.response.text
 
             logger.error(
                 {
