@@ -66,18 +66,17 @@ def cleanup_remote_directory(api, deploy_dir):
             logger.error({"message": "Failed to delete file", "file": full_path})
 
 
-def deploy(api, build_dir, deploy_dir, delay, encryption_key, debug):
+def deploy(api, build_dir, deploy_dir, encryption_key, delay=0.0):
     stats = {
         "message": "Deployed build to NekoWeb",
         "build_dir": build_dir,
         "deploy_dir": deploy_dir,
-        "delay": delay,
         "encryption_key": bool(encryption_key),
+        "delay": delay,
         "files_uploaded": 0,
         "files_skipped": 0,
         "directories_created": 0,
         "directories_skipped": 0,
-        "debug": debug,
     }
 
     file_states = api.fetch_file_states(deploy_dir, encryption_key)
@@ -87,6 +86,7 @@ def deploy(api, build_dir, deploy_dir, delay, encryption_key, debug):
         if api.create_directory(server_path):
             logger.info({"message": "Directory created", "directory": server_path})
             stats["directories_created"] += 1
+            time.sleep(delay)
         else:
             logger.info(
                 {
@@ -96,7 +96,6 @@ def deploy(api, build_dir, deploy_dir, delay, encryption_key, debug):
                 }
             )
             stats["directories_skipped"] += 1
-        time.sleep(delay)
 
         for file in files:
             if file == "_file_states":
@@ -124,8 +123,10 @@ def deploy(api, build_dir, deploy_dir, delay, encryption_key, debug):
                     )
                     file_states[server_file_path] = local_md5
                     stats["files_uploaded"] += 1
+                    time.sleep(delay)
                 else:
                     logger.error({"message": "Failed to upload file", "file": local_path})
+                    time.sleep(delay)
             else:
                 logger.info(
                     {
@@ -135,7 +136,6 @@ def deploy(api, build_dir, deploy_dir, delay, encryption_key, debug):
                     }
                 )
                 stats["files_skipped"] += 1
-            time.sleep(delay)
 
     file_states_path = os.path.join(build_dir, "_file_states")
     if not api.update_file_states(file_states, file_states_path, deploy_dir, encryption_key):
@@ -180,7 +180,8 @@ def main(
     api = NekoWebAPI(api_key, "nekoweb.org", nekoweb_pagename)
     if cleanup.lower() == "true":
         cleanup_remote_directory(api, deploy_dir)
-    deploy(api, build_dir, deploy_dir, delay, encryption_key, debug)
+
+    deploy(api, build_dir, deploy_dir, encryption_key, delay)
 
 
 if __name__ == "__main__":
