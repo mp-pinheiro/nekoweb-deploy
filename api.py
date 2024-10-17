@@ -47,11 +47,15 @@ class NekoWebAPI:
             return response.ok
 
     def list_files(self, pathname):
-        response = self.requester.request(
-            "GET",
-            f"{self.base_url}/files/readfolder?pathname={pathname}",
-            headers={"Authorization": self.api_key},
-        )
+        try:
+            response = self.requester.request(
+                "GET",
+                f"{self.base_url}/files/readfolder?pathname={pathname}",
+                headers={"Authorization": self.api_key},
+            )
+        except HTTPError:
+            return []
+
         return response.json() if response.ok else []
 
     def delete_file_or_directory(self, pathname):
