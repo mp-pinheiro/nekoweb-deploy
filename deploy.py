@@ -62,6 +62,11 @@ def cleanup_remote_directory(api, deploy_dir):
         items = api.list_files(deploy_dir)
         for item in items:
             full_path = os.path.join(deploy_dir, item["name"])
+
+            # skip special files as they cannot be deleted
+            if full_path in api.get_special_files():
+                continue
+
             logger.info({"message": "Deleting file", "file": full_path})
             api.delete_file_or_directory(full_path)
     else:
@@ -112,8 +117,8 @@ def deploy(api, build_dir, deploy_dir, encryption_key, delay=0.0):
             if server_file_path not in file_states or local_md5 != file_states.get(server_file_path):
                 # defines the update method: `upload_file` or `edit_file`
                 api_method = api.upload_file
-                if server_file_path == "/elements.css":
-                    # `/elements.css` is a special file that cannot be uploaded using the `upload_file` method
+                if server_file_path in api.get_special_files():
+                    # some files are special and cannot overwritten / uploaded using the `upload_file` method
                     api_method = api.edit_file
 
                 if api_method(local_path, server_file_path):
