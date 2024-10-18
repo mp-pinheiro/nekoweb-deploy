@@ -58,13 +58,19 @@ class NekoWebAPI:
 
         return response.json() if response.ok else []
 
-    def delete_file_or_directory(self, pathname):
+    def delete_file_or_directory(self, pathname, ignore_not_found=False):
         data = {"pathname": pathname}
+
+        ignored = {}
+        if ignore_not_found:
+            ignored = {400: {"message": "File/folder does not exist"}}
+
         response = self.requester.request(
             "POST",
             f"{self.base_url}/files/delete",
             headers={"Authorization": self.api_key},
             data=data,
+            ignored_errors=ignored,
         )
         return response.ok
 
@@ -74,7 +80,6 @@ class NekoWebAPI:
             response = self.requester.request(
                 "GET",
                 self.page_url,
-                headers={"Authorization": self.api_key},
             )
         except HTTPError:
             raise ValueError(f"Invalid page URL: `{self.page_url}`. Check your `NEKOWEB_PAGENAME` parameter.")
