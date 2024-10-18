@@ -9,6 +9,9 @@ from requester import Requester
 
 logger = logging.getLogger("neko-deploy")
 
+# constants
+NEKOWEB_API_SPECIAL_FILES = ["/elements.css", "not_found.html", "cursor.png"]
+
 
 class NekoWebAPI:
     def __init__(self, api_key, base_url, page_name):
@@ -128,3 +131,7 @@ class NekoWebAPI:
                 f.write(file_states_json)
 
         return self.upload_file(file_states_path, f"{deploy_dir}/_file_states")
+
+    def get_special_files(self):
+        """Return a list of special Nekoweb files that cannot be deleted."""
+        return NEKOWEB_API_SPECIAL_FILES
