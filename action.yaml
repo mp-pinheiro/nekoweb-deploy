@@ -1,7 +1,7 @@
 name: Deploy to Nekoweb
 description: Deploy to Nekoweb using the Nekoweb API
 author: fairfruit
-inputs: 
+inputs:
   API_KEY:
     description: API key for Nekoweb
     required: true
@@ -18,7 +18,7 @@ inputs:
     required: true
   CLEANUP:
     description: Also delete remote files that don't exist locally
-    default: 'False'
+    default: "False"
   DELAY:
     description: Delay between Nekoweb API requests (in seconds)
     required: false
@@ -32,11 +32,11 @@ inputs:
     description: Exponential backoff for Nekoweb API request retries
     required: false
   ENCRYPTION_KEY:
-      description: A secret key used to encrypt the file states. Must be a 32-byte URL-safe base64-encoded string
-      required: false
+    description: A secret key used to encrypt the file states. Must be a 32-byte URL-safe base64-encoded string
+    required: false
   DEBUG:
-      description: Enable debug mode
-      required: false
+    description: Enable debug mode
+    required: false
 branding:
   icon: upload-cloud
   color: blue
@@ -46,8 +46,8 @@ runs:
     - name: Setup Python
       uses: actions/setup-python@v5
       with:
-        python-version: '3.x'
-    
+        python-version: "3.x"
+
     - name: Install dependencies
       run: python -m pip install -r ${{ github.action_path }}/requirements.txt
       shell: bash
@@ -67,16 +67,19 @@ runs:
         if [[ -n "${{ inputs.RETRY_DELAY }}" ]]; then
           CMD="$CMD --retry-delay ${{ inputs.RETRY_DELAY }}"
         fi
-        
+
         shopt -s nocasematch
         if [[ "${{ inputs.RETRY_EXP_BACKOFF }}" == "true" ]]; then
           CMD="$CMD --retry-exp-backoff"
         fi
         shopt -u nocasematch
-        
+
+        shopt -s nocasematch
         if [[ "${{ inputs.DEBUG }}" == "true" ]]; then
           CMD="$CMD --debug"
         fi
         echo "Running command: $CMD"
+        shopt -u nocasematch
+
         eval $CMD
       shell: bash
