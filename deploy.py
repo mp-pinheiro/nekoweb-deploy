@@ -62,7 +62,7 @@ def cleanup_remote_directory(api, deploy_dir):
         items = api.list_files(deploy_dir)
         for item in items:
             # skip `elements.css` as it cannot be deleted
-            if item["name"] == "elements.css":
+            if item["name"] == "/elements.css":
                 continue
 
             full_path = os.path.join(deploy_dir, item["name"])
