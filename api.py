@@ -43,7 +43,7 @@ class NekoWebAPI:
 
     def edit_file(self, filepath, server_path):
         with open(filepath, "r") as f:
-            files = {"pathname": (None, "/elements.css"), "content": (None, f.read())}
+            files = {"pathname": (None, server_path), "content": (None, f.read())}
             response = self.requester.request(
                 "POST", f"{self.base_url}/files/edit", headers={"Authorization": self.api_key}, files=files
             )
