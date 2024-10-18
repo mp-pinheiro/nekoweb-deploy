@@ -10,7 +10,7 @@ from requester import Requester
 logger = logging.getLogger("neko-deploy")
 
 # constants
-NEKOWEB_API_SPECIAL_FILES = ["/elements.css", "not_found.html", "cursor.png"]
+NEKOWEB_API_SPECIAL_FILES = ["/elements.css", "/not_found.html", "/cursor.png"]
 
 
 class NekoWebAPI:
