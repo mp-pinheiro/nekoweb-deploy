@@ -65,6 +65,11 @@ class Requester:
                         return response
 
                 # raise an exception if the error is not in the ignored_errors dictionary
-                response.raise_for_status()
+                try:
+                    response.raise_for_status()
+                except HTTPError as http_err:
+                    raise HTTPError(
+                        f"HTTP error occurred: {http_err}, Status Code: {response.status_code}, Response Text: {response.text}"  # noqa
+                    )
 
         raise HTTPError(f"Max retries exceeded for URL: {url} ({retries} retries)")
