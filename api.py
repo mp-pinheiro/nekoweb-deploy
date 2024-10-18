@@ -1,10 +1,13 @@
 import json
+import logging
 import os
 
 from requests.exceptions import HTTPError
 
 from encrypt import decrypt_data, encrypt_data
 from requester import Requester
+
+logger = logging.getLogger("neko-deploy")
 
 
 class NekoWebAPI:
@@ -82,7 +85,14 @@ class NekoWebAPI:
                 self.page_url,
             )
         except HTTPError:
-            raise ValueError(f"Invalid page URL: `{self.page_url}`. Check your `NEKOWEB_PAGENAME` parameter.")
+            logger.warning(
+                {
+                    "message": f"Could not validate URL: `{self.page_url}`, a full deployment will be performed. "
+                    "Check your `NEKOWEB_PAGENAME` parameter.",
+                    "url": self.page_url,
+                }
+            )
+            return {}
 
         # fetch the file states
         file_states_url = f"{self.page_url}/{deploy_dir}/_file_states"
@@ -93,18 +103,18 @@ class NekoWebAPI:
             ignored_errors={404: {"ignore_all": True}},
         )
 
-        if response.ok:
-            # decrypt the data if an encryption key is provided
-            if encryption_key:
-                return json.loads(decrypt_data(response.content, encryption_key))
-
-            # return the data as is if no encryption key is provided
-            try:
-                return response.json()
-            except json.JSONDecodeError:
-                raise ValueError("No encryption key provided. Please provide the correct key or do a fresh deployment.")
-        else:
+        if not response.ok:
             return {}
+
+        if encryption_key:
+            return json.loads(decrypt_data(response.content, encryption_key))
+
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise ValueError(
+                "Invalid encryption key provided. Please provide the correct key or do a fresh deployment."
+            )
 
     def update_file_states(self, file_states, file_states_path, deploy_dir, encryption_key=None):
         file_states_json = json.dumps(file_states)
