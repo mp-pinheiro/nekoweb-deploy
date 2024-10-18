@@ -58,12 +58,10 @@ app = typer.Typer()
 
 def cleanup_remote_directory(api, deploy_dir):
     logger.info({"message": "Cleaning up the server directory", "directory": deploy_dir})
-    items = api.list_files(deploy_dir)
-    for item in items:
-        full_path = os.path.join(deploy_dir, item["name"])
-        logger.info({"message": "Deleting file", "file": full_path})
-        if not api.delete_file_or_directory(full_path):
-            logger.error({"message": "Failed to delete file", "file": full_path})
+    if not api.delete_file_or_directory(deploy_dir, ignore_not_found=True):
+        logger.error({"message": "Failed to delete directory, it probably doesn't exist", "directory": deploy_dir})
+    else:
+        logger.info({"message": "Server directory cleaned up", "directory": deploy_dir})
 
 
 def deploy(api, build_dir, deploy_dir, encryption_key, delay=0.0):
@@ -80,7 +78,7 @@ def deploy(api, build_dir, deploy_dir, encryption_key, delay=0.0):
     }
 
     file_states = api.fetch_file_states(deploy_dir, encryption_key)
-    for root, dirs, files in os.walk(build_dir):
+    for root, _, files in os.walk(build_dir):
         relative_path = os.path.relpath(root, build_dir)
         server_path = deploy_dir if relative_path == "." else os.path.join(deploy_dir, relative_path.replace("\\", "/"))
         if api.create_directory(server_path):
