@@ -8,7 +8,6 @@ inputs:
   BUILD_DIR:
     description: Local build directory to deploy
     required: true
-    default: /build
   DEPLOY_DIR:
     description: Remote directory to deploy to
     required: true
@@ -22,7 +21,8 @@ inputs:
   DELAY:
     description: Delay between Nekoweb API requests (in seconds)
     required: false
-  RETRY_ATTEMTPS:
+    default: "0.5"
+  RETRY_ATTEMPTS:
     description: Number of times to retry the Nekoweb API request
     required: false
   RETRY_DELAY:
@@ -32,7 +32,7 @@ inputs:
     description: Exponential backoff for Nekoweb API request retries
     required: false
   ENCRYPTION_KEY:
-    description: A secret key used to encrypt the file states. Must be a 32-byte URL-safe base64-encoded string
+    description: A secret key used to encrypt the file states. Must be a 32-byte raw key string
     required: false
   DEBUG:
     description: Enable debug mode
@@ -52,32 +52,23 @@ runs:
       run: python -m pip install -r ${{ github.action_path }}/requirements.txt
       shell: bash
 
-    - name: Cleanup and deploy
+    - name: Deploy to Nekoweb
       run: |
-        CMD="python ${{ github.action_path }}/deploy.py ${{ inputs.API_KEY }} ${{ inputs.BUILD_DIR }} ${{ inputs.DEPLOY_DIR }} ${{ inputs.CLEANUP }} ${{ inputs.NEKOWEB_PAGENAME }}"
-        if [[ -n "${{ inputs.DELAY }}" ]]; then
-          CMD="$CMD --delay ${{ inputs.DELAY }}"
-        fi
-        if [[ -n "${{ inputs.ENCRYPTION_KEY }}" ]]; then
-          CMD="$CMD --encryption-key ${{ inputs.ENCRYPTION_KEY }}"
-        fi
-        if [[ -n "${{ inputs.RETRY_ATTEMPTS }}" ]]; then
-          CMD="$CMD --retry-attempts ${{ inputs.RETRY_ATTEMPTS }}"
-        fi
-        if [[ -n "${{ inputs.RETRY_DELAY }}" ]]; then
-          CMD="$CMD --retry-delay ${{ inputs.RETRY_DELAY }}"
-        fi
-
+        ARGS=(
+          "${{ github.action_path }}/deploy.py"
+          "${{ inputs.API_KEY }}"
+          "${{ inputs.BUILD_DIR }}"
+          "${{ inputs.DEPLOY_DIR }}"
+          "${{ inputs.CLEANUP }}"
+          "${{ inputs.NEKOWEB_PAGENAME }}"
+        )
+        [[ -n "${{ inputs.DELAY }}" ]]          && ARGS+=(--delay "${{ inputs.DELAY }}")
+        [[ -n "${{ inputs.ENCRYPTION_KEY }}" ]] && ARGS+=(--encryption-key "${{ inputs.ENCRYPTION_KEY }}")
+        [[ -n "${{ inputs.RETRY_ATTEMPTS }}" ]] && ARGS+=(--retry-attempts "${{ inputs.RETRY_ATTEMPTS }}")
+        [[ -n "${{ inputs.RETRY_DELAY }}" ]]    && ARGS+=(--retry-delay "${{ inputs.RETRY_DELAY }}")
         RETRY_EXP_BACKOFF_INPUT="${{ inputs.RETRY_EXP_BACKOFF }}"
-        if [[ "${RETRY_EXP_BACKOFF_INPUT,,}" == "true" ]]; then
-          CMD="$CMD --retry-exp-backoff"
-        fi
-
+        [[ "${RETRY_EXP_BACKOFF_INPUT,,}" == "true" ]] && ARGS+=(--retry-exp-backoff)
         DEBUG_INPUT="${{ inputs.DEBUG }}"
-        if [[ "${DEBUG_INPUT,,}" == "true" ]]; then
-          CMD="$CMD --debug"
-        fi
-
-        echo "Running command: $CMD"
-        eval $CMD
+        [[ "${DEBUG_INPUT,,}" == "true" ]] && ARGS+=(--debug)
+        python "${ARGS[@]}"
       shell: bash

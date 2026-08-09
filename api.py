@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import posixpath
 
 from requests.exceptions import HTTPError
 
@@ -9,15 +10,19 @@ from requester import Requester
 
 logger = logging.getLogger("neko-deploy")
 
-# constants
-NEKOWEB_API_SPECIAL_FILES = ["/elements.css", "/not_found.html", "/cursor.png"]
+NEKOWEB_API_SPECIAL_FILES = ["elements.css", "not_found.html", "cursor.png"]
 
 
 class NekoWebAPI:
     def __init__(self, api_key, base_url, page_name):
         self.api_key = api_key
-        self.base_url = f"https://{base_url}/api"
-        self.page_url = f"https://{page_name}.{base_url}"
+        if "://" in base_url:
+            base = base_url.rstrip("/")
+            self.base_url = f"{base}/api"
+            self.page_url = base
+        else:
+            self.base_url = f"https://{base_url}/api"
+            self.page_url = f"https://{page_name}.{base_url}"
         self.requester = Requester()
 
     def create_directory(self, pathname):
@@ -63,6 +68,18 @@ class NekoWebAPI:
             return []
 
         return response.json() if response.ok else []
+
+    def walk_remote(self, deploy_dir):
+        """Yield ``(path, is_dir)`` for every entry under ``deploy_dir`` recursively."""
+        for item in self.list_files(deploy_dir):
+            name = item.get("name")
+            if not name:
+                continue
+            full = posixpath.join(deploy_dir, name)
+            is_dir = bool(item.get("dir", False))
+            yield full, is_dir
+            if is_dir:
+                yield from self.walk_remote(full)
 
     def delete_file_or_directory(self, pathname, ignore_not_found=False):
         data = {"pathname": pathname}

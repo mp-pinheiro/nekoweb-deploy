@@ -1,4 +1,4 @@
-requests==2.26.0
+requests==2.34.2
 cryptography==42.0.5
 typer==0.9.0
 click==8.1.7
