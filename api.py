@@ -114,16 +114,23 @@ class NekoWebAPI:
             )
             return {}
 
-        # fetch the file states
-        file_states_url = f"{self.page_url}/{deploy_dir}/_file_states"
-        response = self.requester.request(
-            "GET",
-            file_states_url,
-            headers={"Authorization": self.api_key},
-            ignored_errors={404: {"ignore_all": True}},
-        )
-
-        if not response.ok:
+        # page_url already maps to the domain folder under multi-site routing,
+        # so prepending deploy_dir double-counts the domain; fall back to the
+        # domain-root path before giving up (a 404 means a full redeploy).
+        response = None
+        for file_states_url in (
+            f"{self.page_url}/{deploy_dir}/_file_states",
+            f"{self.page_url}/_file_states",
+        ):
+            response = self.requester.request(
+                "GET",
+                file_states_url,
+                headers={"Authorization": self.api_key},
+                ignored_errors={404: {"ignore_all": True}},
+            )
+            if response.ok:
+                break
+        else:
             return {}
 
         if encryption_key:
